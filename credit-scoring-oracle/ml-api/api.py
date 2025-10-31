@@ -226,6 +226,6 @@ if __name__ == '__main__':
     # Load model on startup
     if load_model():
         print("🚀 API ready to serve predictions!")
-        app.run(debug=True, host='0.0.0.0', port=8000)
+        app.run(debug=True, host='0.0.0.0', port=3000)
     else:
         print("❌ Failed to load model. Please train the model first.")
