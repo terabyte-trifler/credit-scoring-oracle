@@ -161,6 +161,35 @@ contract CreditScoringOracle is Ownable, ReentrancyGuard {
         
         emit ApplicationProcessed(_applicationId, app.status, _creditScore, _riskScore);
     }
+
+    /**
+     * @dev Get detailed credit profile for a wallet
+     */
+    function getCreditScore(address wallet) external view returns (
+        uint256 creditScore,
+        uint256 totalLoans,
+        uint256 activeLoans,
+        uint256 defaultCount,
+        bool isBlacklisted,
+        uint256 lastUpdated
+    ) {
+        CreditProfile memory profile = creditProfiles[wallet];
+        return (
+            profile.creditScore,
+            profile.totalLoans,
+            profile.activeLoans,
+            profile.defaultCount,
+            profile.isBlacklisted,
+            profile.lastUpdated
+        );
+    }
+
+    /**
+     * @dev Get simple credit score for a wallet
+     */
+    function getCreditScoreSimple(address wallet) external view returns (uint256) {
+        return creditProfiles[wallet].creditScore;
+    }
     
     /**
      * @dev Calculate interest rate based on credit score and risk
