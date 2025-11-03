@@ -7,9 +7,9 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+} from "../components/ui/card";
+import { Button } from "../components/ui/button";
+import { Badge } from "../components/ui/badge";
 import {
   Wallet,
   CreditCard,
@@ -17,8 +17,8 @@ import {
   Shield,
   AlertCircle,
 } from "lucide-react";
-import { connectWallet, getCurrentAccount, shortenAddress } from "@/lib/web3";
-import { switchToSomnia } from "@/lib/chains";
+import { connectWallet, getCurrentAccount, shortenAddress } from "../lib/web3";
+import { switchToSomnia } from "../lib/chains";
 import { toast } from "sonner";
 
 export default function HomePage() {
@@ -52,9 +52,11 @@ export default function HomePage() {
       setAccount(connectedAccount);
 
       toast.success("Wallet connected successfully!");
-    } catch (error: any) {
+    } catch (error) {
       console.error("Connection error:", error);
-      toast.error(error.message || "Failed to connect wallet");
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to connect wallet";
+      toast.error(errorMessage);
     } finally {
       setIsConnecting(false);
     }
