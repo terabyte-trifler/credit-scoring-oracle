@@ -32,6 +32,26 @@ export function ContractDiagnostic() {
       addLog("info", "🔍 Starting diagnostic...");
       addLog("info", `Contract Address: ${CONTRACT_ADDRESS}`);
 
+      // Check network first
+      addLog(
+        "info",
+        "\n📋 Network Check: Verifying Somnia Dream Testnet connection..."
+      );
+      await checkNetwork();
+
+      if (!isCorrectNetwork) {
+        addLog(
+          "error",
+          "❌ Wrong network! Please connect to Somnia Dream Testnet (Chain ID: 50312)"
+        );
+        addLog(
+          "info",
+          "💡 Use the wallet connect button to switch to the correct network"
+        );
+        return;
+      }
+      addLog("success", "✅ Connected to Somnia Dream Testnet");
+
       // Test 1: Check contract exists
       addLog("info", "\n📋 Test 1: Checking if contract exists...");
       try {
@@ -170,7 +190,23 @@ export function ContractDiagnostic() {
           >
             {isRunning ? "Running Diagnostic..." : "Run Full Diagnostic"}
           </Button>
+          {!wallet.isConnected && (
+            <Button onClick={connect} variant="outline">
+              Connect Wallet
+            </Button>
+          )}
         </div>
+
+        {wallet.isConnected && !isCorrectNetwork && (
+          <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+            <div className="flex items-center gap-2 text-yellow-800">
+              <AlertCircle className="h-4 w-4" />
+              <span className="text-sm font-medium">
+                Wrong Network: Please switch to Somnia Dream Testnet
+              </span>
+            </div>
+          </div>
+        )}
 
         {logs.length > 0 && (
           <div className="border border-gray-200 rounded-lg p-4 bg-gray-50 max-h-96 overflow-y-auto">
