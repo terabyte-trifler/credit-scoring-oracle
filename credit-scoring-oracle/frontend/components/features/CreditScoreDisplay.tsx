@@ -225,7 +225,7 @@ export function CreditScoreDisplay() {
                 <li>✓ ML API is running (Terminal 1)</li>
                 <li>✓ Oracle middleware is running (Terminal 2)</li>
                 <li>✓ You have at least 0.01 STT in your wallet</li>
-                <li>✓ You're on Somnia Dream Testnet</li>
+                <li>✓ You&apos;re on Somnia Dream Testnet</li>
               </ul>
             </div>
           </div>

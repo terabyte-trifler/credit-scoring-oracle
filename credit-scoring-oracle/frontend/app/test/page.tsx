@@ -1,10 +1,9 @@
 // app/test/page.tsx
 "use client";
 
-import { WalletConnect } from "@/components/features/WalletConnect";
-import { DebugPanel } from "@/components/features/DebugPanel";
-import { ContractDiagnostic } from "@/components/features/ContractDiagnostic";
-import { DirectTransactionTool } from "@/components/features/DirectTransactionTool";
+import { WalletConnect } from "../../components/features/WalletConnect";
+import { ContractDiagnostic } from "../../components/features/ContractDiagnostic";
+import { DirectTransactionTool } from "../../components/features/DirectTransactionTool";
 
 export default function TestPage() {
   return (
@@ -22,7 +21,6 @@ export default function TestPage() {
         <WalletConnect />
         <DirectTransactionTool />
         <ContractDiagnostic />
-        <DebugPanel />
       </div>
     </div>
   );
