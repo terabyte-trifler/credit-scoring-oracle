@@ -15,7 +15,7 @@ interface LogEntry {
 }
 
 export function ContractDiagnostic() {
-  const { wallet } = useWallet();
+  const { wallet, isCorrectNetwork, connect, checkNetwork } = useWallet();
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [isRunning, setIsRunning] = useState(false);
 
