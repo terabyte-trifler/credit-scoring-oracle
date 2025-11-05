@@ -1,7 +1,10 @@
 // app/test/page.tsx
 "use client";
 
-import { WalletConnect } from "../../components/features/WalletConnect";
+import { WalletConnect } from "@/components/features/WalletConnect";
+import { DebugPanel } from "@/components/features/DebugPanel";
+import { ContractDiagnostic } from "@/components/features/ContractDiagnostic";
+import { DirectTransactionTool } from "@/components/features/DirectTransactionTool";
 
 export default function TestPage() {
   return (
@@ -9,20 +12,17 @@ export default function TestPage() {
       <div className="max-w-4xl mx-auto px-4 space-y-8">
         <div className="text-center">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Contract Interaction Test
+            Debug & Test Center
           </h1>
           <p className="text-gray-600">
-            Debug and test your smart contract functions
+            Test your credit scoring oracle without command line
           </p>
         </div>
 
         <WalletConnect />
-        <div className="p-6 bg-white rounded-lg shadow">
-          <h2 className="text-xl font-semibold mb-4">Debug Panel</h2>
-          <p className="text-gray-600">
-            Debug panel functionality can be added here.
-          </p>
-        </div>
+        <DirectTransactionTool />
+        <ContractDiagnostic />
+        <DebugPanel />
       </div>
     </div>
   );

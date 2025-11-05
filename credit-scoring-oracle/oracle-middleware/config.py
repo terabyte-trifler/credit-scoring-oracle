@@ -13,7 +13,7 @@ CONTRACT_ADDRESS = '0x37feb802a7babd7dac29e5749ac3956b8e259d91'  # Updated to de
 ORACLE_PRIVATE_KEY = os.getenv('PRIVATE_KEY')
 
 # ML API Configuration
-ML_API_URL = os.getenv('ML_API_URL', 'http://localhost:8000')
+ML_API_URL = os.getenv('ML_API_URL', 'http://localhost:8001')
 ML_API_ENDPOINT = f'{ML_API_URL}/api/v1/credit-score'
 
 # Oracle Configuration

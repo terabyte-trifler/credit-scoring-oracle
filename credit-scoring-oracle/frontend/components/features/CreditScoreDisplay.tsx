@@ -1,7 +1,7 @@
 // components/features/CreditScoreDisplay.tsx
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useContract } from "../../lib/hooks/useContract";
 import { useWallet } from "../../lib/hooks/useWallet";
 import { Card, CardHeader, CardTitle, CardContent } from "../ui/card";
@@ -27,13 +27,7 @@ export function CreditScoreDisplay() {
   const [debugInfo, setDebugInfo] = useState<string>("");
 
   // Fetch credit score on mount and wallet change
-  useEffect(() => {
-    if (wallet.isConnected && isCorrectNetwork && wallet.address) {
-      fetchScore();
-    }
-  }, [wallet.address, isCorrectNetwork, wallet.isConnected, fetchScore]);
-
-  const fetchScore = async () => {
+  const fetchScore = useCallback(async () => {
     if (!wallet.address) return;
 
     setIsRefreshing(true);
@@ -66,13 +60,20 @@ export function CreditScoreDisplay() {
       }
 
       setLastFetch(new Date());
-    } catch (err: any) {
+    } catch (err) {
       console.error("❌ Error fetching score:", err);
-      setDebugInfo(`Error: ${err.message}`);
+      const errorMessage = err instanceof Error ? err.message : "Unknown error";
+      setDebugInfo(`Error: ${errorMessage}`);
     } finally {
       setIsRefreshing(false);
     }
-  };
+  }, [wallet.address, getCreditScore]);
+
+  useEffect(() => {
+    if (wallet.isConnected && isCorrectNetwork && wallet.address) {
+      fetchScore();
+    }
+  }, [wallet.address, isCorrectNetwork, wallet.isConnected, fetchScore]);
 
   const handleRequestScore = async () => {
     if (!wallet.address) return;
@@ -89,10 +90,11 @@ export function CreditScoreDisplay() {
       setTimeout(() => {
         fetchScore();
       }, 10000); // Wait 10 seconds
-    } catch (err: any) {
+    } catch (err) {
       console.error("❌ Request failed:", err);
+      const errorMessage = err instanceof Error ? err.message : "Unknown error";
       alert(
-        `Failed to request score:\n${err.message}\n\nMake sure:\n1. You have enough STT for the fee\n2. ML API is running\n3. Oracle middleware is running`
+        `Failed to request score:\n${errorMessage}\n\nMake sure:\n1. You have enough STT for the fee\n2. ML API is running\n3. Oracle middleware is running`
       );
     }
   };
@@ -204,7 +206,7 @@ export function CreditScoreDisplay() {
               </p>
               <Button
                 onClick={handleRequestScore}
-                isLoading={isLoading}
+                disabled={isLoading}
                 size="lg"
               >
                 Request Credit Score
@@ -306,7 +308,7 @@ export function CreditScoreDisplay() {
             <div className="flex gap-3">
               <Button
                 onClick={handleRequestScore}
-                isLoading={isLoading}
+                disabled={isLoading}
                 className="flex-1"
               >
                 Update Score
