@@ -31,7 +31,7 @@ class OracleMiddleware:
         self.rpc_url = os.getenv('SOMNIA_TESTNET_RPC_URL', 'https://dream-rpc.somnia.network')
         self.contract_address = os.getenv('CONTRACT_ADDRESS')
         self.private_key = os.getenv('PRIVATE_KEY')
-        self.ml_api_url = os.getenv('ML_API_URL', 'http://localhost:3000')
+        self.ml_api_url = os.getenv('ML_API_URL', 'http://localhost:8001')
         
         # Validate configuration
         if not self.contract_address:
