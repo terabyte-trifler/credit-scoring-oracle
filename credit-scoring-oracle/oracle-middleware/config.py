@@ -6,10 +6,10 @@ load_dotenv('../.env')
 
 # Somnia Network Configuration
 SOMNIA_RPC_URL = os.getenv('SOMNIA_TESTNET_RPC_URL', 'https://dream-rpc.somnia.network')
-CHAIN_ID = 50311
+CHAIN_ID = 50312
 
 # Contract Configuration
-CONTRACT_ADDRESS =A '0xBBD4AD1B7EA6B763d41e482061f63BBaADE7b956'  # ← REPLACE THIS!
+CONTRACT_ADDRESS = '0x37feb802a7babd7dac29e5749ac3956b8e259d91'  # Updated to deployed contract
 ORACLE_PRIVATE_KEY = os.getenv('PRIVATE_KEY')
 
 # ML API Configuration

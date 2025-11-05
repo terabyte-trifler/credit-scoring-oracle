@@ -1,7 +1,7 @@
 // components/features/CreditScoreDisplay.tsx
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import { useContract } from "../../lib/hooks/useContract";
 import { useWallet } from "../../lib/hooks/useWallet";
 import { Card, CardHeader, CardTitle, CardContent } from "../ui/card";
@@ -12,6 +12,7 @@ import {
   TrendingUp,
   Calendar,
   Hash,
+  Info,
 } from "lucide-react";
 import { formatTimestamp } from "../../lib/web3";
 import type { CreditScore } from "../../lib/types";
@@ -23,25 +24,7 @@ export function CreditScoreDisplay() {
   const [score, setScore] = useState<CreditScore | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [lastFetch, setLastFetch] = useState<Date | null>(null);
-
-  const fetchScore = useCallback(async () => {
-    if (!wallet.address) return;
-
-    setIsRefreshing(true);
-    try {
-      const result = await getCreditScore(wallet.address);
-      if (result) {
-        setScore(result);
-      } else {
-        setScore(null);
-      }
-      setLastFetch(new Date());
-    } catch (err) {
-      console.error("Failed to fetch score:", err);
-    } finally {
-      setIsRefreshing(false);
-    }
-  }, [wallet.address, getCreditScore]);
+  const [debugInfo, setDebugInfo] = useState<string>("");
 
   // Fetch credit score on mount and wallet change
   useEffect(() => {
@@ -50,24 +33,67 @@ export function CreditScoreDisplay() {
     }
   }, [wallet.address, isCorrectNetwork, wallet.isConnected, fetchScore]);
 
+  const fetchScore = async () => {
+    if (!wallet.address) return;
+
+    setIsRefreshing(true);
+    setDebugInfo("Fetching score...");
+
+    try {
+      console.log("🔍 Fetching score for:", wallet.address);
+      const result = await getCreditScore(wallet.address);
+
+      console.log("📊 Score result:", result);
+      setDebugInfo(`Raw result: ${JSON.stringify(result)}`);
+
+      if (result) {
+        // Check if score is actually zero or just not set
+        const scoreValue = Number(result.score);
+        const hasData = scoreValue > 0 || Number(result.requestCount) > 0;
+
+        if (hasData) {
+          setScore(result);
+          setDebugInfo(
+            `Score loaded: ${scoreValue} (confidence: ${result.confidence}%)`
+          );
+        } else {
+          setScore(null);
+          setDebugInfo("No score found - you need to request your first score");
+        }
+      } else {
+        setScore(null);
+        setDebugInfo("Contract returned null - score not found");
+      }
+
+      setLastFetch(new Date());
+    } catch (err: any) {
+      console.error("❌ Error fetching score:", err);
+      setDebugInfo(`Error: ${err.message}`);
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
   const handleRequestScore = async () => {
     if (!wallet.address) return;
 
     try {
+      console.log("📝 Requesting new score...");
       const txHash = await requestCreditScore(wallet.address);
 
-      // Show success message
       alert(
-        `Score requested! Transaction: ${txHash}\n\nThe oracle will update your score in ~5 seconds. Refresh to see the update.`
+        `✅ Score requested successfully!\n\nTransaction: ${txHash}\n\nThe oracle will process this in 5-10 seconds. Click "Refresh" to check for updates.`
       );
 
-      // Wait a bit then refresh
+      // Auto-refresh after delay
       setTimeout(() => {
         fetchScore();
-      }, 8000);
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Unknown error";
-      alert(`Failed to request score: ${errorMessage}`);
+      }, 10000); // Wait 10 seconds
+    } catch (err: any) {
+      console.error("❌ Request failed:", err);
+      alert(
+        `Failed to request score:\n${err.message}\n\nMake sure:\n1. You have enough STT for the fee\n2. ML API is running\n3. Oracle middleware is running`
+      );
     }
   };
 
@@ -75,12 +101,32 @@ export function CreditScoreDisplay() {
   const getScoreStatus = (scoreValue: bigint) => {
     const score = Number(scoreValue);
     if (score >= 800)
-      return { label: "Excellent", color: "text-green-600", bg: "bg-green-50" };
+      return {
+        label: "Excellent",
+        color: "text-green-600",
+        bg: "bg-green-50",
+        border: "border-green-200",
+      };
     if (score >= 700)
-      return { label: "Good", color: "text-blue-600", bg: "bg-blue-50" };
+      return {
+        label: "Good",
+        color: "text-blue-600",
+        bg: "bg-blue-50",
+        border: "border-blue-200",
+      };
     if (score >= 600)
-      return { label: "Fair", color: "text-yellow-600", bg: "bg-yellow-50" };
-    return { label: "Poor", color: "text-red-600", bg: "bg-red-50" };
+      return {
+        label: "Fair",
+        color: "text-yellow-600",
+        bg: "bg-yellow-50",
+        border: "border-yellow-200",
+      };
+    return {
+      label: "Poor",
+      color: "text-red-600",
+      bg: "bg-red-50",
+      border: "border-red-200",
+    };
   };
 
   if (!wallet.isConnected || !isCorrectNetwork) {
@@ -124,6 +170,18 @@ export function CreditScoreDisplay() {
       </CardHeader>
 
       <CardContent>
+        {/* Debug Info */}
+        {debugInfo && (
+          <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+            <div className="flex items-start gap-2 text-xs">
+              <Info className="h-4 w-4 text-blue-600 flex-shrink-0 mt-0.5" />
+              <div className="font-mono text-blue-800 break-all">
+                {debugInfo}
+              </div>
+            </div>
+          </div>
+        )}
+
         {error && (
           <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
             <div className="flex items-center gap-2">
@@ -146,14 +204,27 @@ export function CreditScoreDisplay() {
               </p>
               <Button
                 onClick={handleRequestScore}
-                disabled={isLoading}
+                isLoading={isLoading}
                 size="lg"
               >
                 Request Credit Score
               </Button>
               <p className="text-xs text-gray-500 mt-2">
-                Fee: 0.001 STT • Takes ~5 seconds
+                Fee: 0.001 STT • Takes ~5-10 seconds
               </p>
+            </div>
+
+            {/* Prerequisites Checklist */}
+            <div className="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg text-left">
+              <h4 className="font-semibold text-yellow-900 mb-2 text-sm">
+                ⚠️ Before requesting, make sure:
+              </h4>
+              <ul className="text-xs text-yellow-800 space-y-1">
+                <li>✓ ML API is running (Terminal 1)</li>
+                <li>✓ Oracle middleware is running (Terminal 2)</li>
+                <li>✓ You have at least 0.01 STT in your wallet</li>
+                <li>✓ You're on Somnia Dream Testnet</li>
+              </ul>
             </div>
           </div>
         ) : (
@@ -166,9 +237,11 @@ export function CreditScoreDisplay() {
                   {Number(score.score)}
                 </div>
                 <div
-                  className={`absolute -bottom-2 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full text-sm font-medium ${
+                  className={`absolute -bottom-2 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full text-sm font-medium border ${
                     getScoreStatus(score.score).bg
-                  } ${getScoreStatus(score.score).color}`}
+                  } ${getScoreStatus(score.score).color} ${
+                    getScoreStatus(score.score).border
+                  }`}
                 >
                   {getScoreStatus(score.score).label}
                 </div>
@@ -179,7 +252,12 @@ export function CreditScoreDisplay() {
                 <div className="h-3 bg-gray-200 rounded-full overflow-hidden">
                   <div
                     className="h-full bg-gradient-to-r from-red-500 via-yellow-500 to-green-500 transition-all duration-500"
-                    style={{ width: `${(Number(score.score) / 1000) * 100}%` }}
+                    style={{
+                      width: `${Math.min(
+                        (Number(score.score) / 850) * 100,
+                        100
+                      )}%`,
+                    }}
                   />
                 </div>
                 <div className="flex justify-between text-xs text-gray-500 mt-1">
@@ -207,7 +285,9 @@ export function CreditScoreDisplay() {
                   <span className="text-sm">Last Updated</span>
                 </div>
                 <div className="text-sm font-medium text-gray-900">
-                  {formatTimestamp(score.lastUpdate)}
+                  {Number(score.lastUpdate) > 0
+                    ? formatTimestamp(score.lastUpdate)
+                    : "Never"}
                 </div>
               </div>
 
@@ -226,7 +306,7 @@ export function CreditScoreDisplay() {
             <div className="flex gap-3">
               <Button
                 onClick={handleRequestScore}
-                disabled={isLoading}
+                isLoading={isLoading}
                 className="flex-1"
               >
                 Update Score
