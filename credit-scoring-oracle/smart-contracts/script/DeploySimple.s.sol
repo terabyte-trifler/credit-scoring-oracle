@@ -6,16 +6,19 @@ import "../src/CreditScoringOracle.sol";
 
 contract DeploySimple is Script {
     function run() external {
-        // Hardcode the oracle address for now
-        address oracleAddress = 0x742D35CC6634c0532925A3b844BC9E7595F0BEb0;
+        uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
         
-        vm.startBroadcast();
+        vm.startBroadcast(deployerPrivateKey);
+        
+        // Use the deployer address as oracle for testing
+        address deployer = vm.addr(deployerPrivateKey);
+        console.log("Deployer address:", deployer);
         
         // Deploy the CreditScoringOracle contract
-        CreditScoringOracle oracle = new CreditScoringOracle(oracleAddress);
+        CreditScoringOracle oracle = new CreditScoringOracle(deployer);
         
         console.log("CreditScoringOracle deployed to:", address(oracle));
-        console.log("Oracle address set to:", oracleAddress);
+        console.log("Oracle address set to:", deployer);
         console.log("Contract owner:", oracle.owner());
         
         vm.stopBroadcast();

@@ -52,6 +52,45 @@ export function ContractDiagnostic() {
       }
       addLog("success", "✅ Connected to Somnia Dream Testnet");
 
+      // Check if contract is deployed
+      addLog("info", "\n📋 Deployment Check: Verifying contract deployment...");
+      try {
+        const response = await fetch("https://dream-rpc.somnia.network", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            jsonrpc: "2.0",
+            method: "eth_getCode",
+            params: [CONTRACT_ADDRESS, "latest"],
+            id: 1,
+          }),
+        });
+        const result = await response.json();
+
+        if (result.result === "0x") {
+          addLog("error", "❌ Contract not deployed at this address!");
+          addLog(
+            "info",
+            "💡 The contract needs to be deployed to Somnia Dream Testnet"
+          );
+          addLog(
+            "info",
+            "📝 Run: cd smart-contracts && forge script script/DeploySomnia.s.sol --rpc-url https://dream-rpc.somnia.network --broadcast"
+          );
+          return;
+        } else {
+          addLog("success", "✅ Contract is deployed and has bytecode");
+        }
+      } catch (err) {
+        addLog(
+          "error",
+          `❌ Failed to check deployment: ${
+            err instanceof Error ? err.message : "Unknown error"
+          }`
+        );
+        return;
+      }
+
       // Test 1: Check contract exists
       addLog("info", "\n📋 Test 1: Checking if contract exists...");
       try {
