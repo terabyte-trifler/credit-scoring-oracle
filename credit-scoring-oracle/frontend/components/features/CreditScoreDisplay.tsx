@@ -30,12 +30,11 @@ export function CreditScoreDisplay() {
     setIsRefreshing(true);
     try {
       const result = await getCreditScore(wallet.address);
-      setScore({
-        score: result,
-        confidence: BigInt(85),
-        lastUpdate: BigInt(Math.floor(Date.now() / 1000)),
-        requestCount: BigInt(1),
-      });
+      if (result) {
+        setScore(result);
+      } else {
+        setScore(null);
+      }
       setLastFetch(new Date());
     } catch (err) {
       console.error("Failed to fetch score:", err);
